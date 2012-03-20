@@ -14,6 +14,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity Main is
 	Port(
 		SW 	: in  STD_LOGIC_VECTOR(7 downto 0);
+		RESET : in STD_LOGIC;
 		LED 	: out STD_LOGIC_VECTOR(7 downto 0)
 	);
 end Main;
@@ -60,8 +61,6 @@ architecture Behave of Main is
 		);
 	END COMPONENT;
 	
-	
-	
 	COMPONENT DS8205D
 	PORT(
 		A : IN std_logic_vector(2 downto 0);
@@ -74,6 +73,7 @@ architecture Behave of Main is
 	
 begin
 	LED <= SW;
+	reset_n <= not RESET;
 	
 	CPU_16: UA880D PORT MAP(
 		D => data_bus,

@@ -19,12 +19,13 @@
  NET "LED<7>" LOC = "N12"; # Bank = 2, Pin name = IO_L13P_M1_2,		   Sch name = M1/LD7
 
 # onBoard PUSH BUTTONS 
- # NET "BTN<0>" LOC = "N4";  # Bank = 3, Pin name = IO_L1P, 	   		   Sch name = BTNU
- # NET "BTN<1>" LOC = "P4";  # Bank = 3, Pin name = IO_L2P, 	   		   Sch name = BTNL
- # NET "BTN<2>" LOC = "P3";  # Bank = 3, Pin name = IO_L2N, 	   		   Sch name = BTND
- # NET "BTN<3>" LOC = "F6";  # Bank = 3, Pin name = IO_L55P_M3A13, 	   Sch name = BTNR
- # NET "BTN<4>" LOC = "F5";  # Bank = 3, Pin name = IO_L55N_M3A14, 	   Sch name = BTNC
-
+# NET "BTN<0>" LOC = "N4";  # Bank = 3, Pin name = IO_L1P, 	   		   Sch name = BTNU
+# NET "BTN<1>" LOC = "P4";  # Bank = 3, Pin name = IO_L2P, 	   		   Sch name = BTNL
+# NET "BTN<2>" LOC = "P3";  # Bank = 3, Pin name = IO_L2N, 	   		   Sch name = BTND
+# NET "BTN<3>" LOC = "F6";  # Bank = 3, Pin name = IO_L55P_M3A13, 	   Sch name = BTNR
+# NET "BTN<4>" LOC = "F5";  # Bank = 3, Pin name = IO_L55N_M3A14, 	   Sch name = BTNC
+ NET "RESET" LOC = "T15"; # Reset
+ 
 # onBoard SWITCHES
  NET "SW<0>" LOC = "A10"; # Bank = 0, Pin name = IO_L37N_GCLK12,      	Sch name = SW0
  NET "SW<1>" LOC = "D14"; # Bank = 0, Pin name = IO_L65P_SCP3,      	Sch name = SW1
