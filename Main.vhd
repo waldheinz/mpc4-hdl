@@ -13,8 +13,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity Main is
 	Port(
-		SW 	: in  STD_LOGIC_VECTOR(7 downto 0);
+		SW 	: in STD_LOGIC_VECTOR(7 downto 0);
 		RESET : in STD_LOGIC;
+		CLK	: in STD_LOGIC; -- 100 MHz clock from board
 		LED 	: out STD_LOGIC_VECTOR(7 downto 0)
 	);
 end Main;
@@ -40,6 +41,16 @@ architecture Behave of Main is
 	signal wr				: std_logic;
 	signal cup16_m1_out 	: std_logic;
 	signal aus_n			: std_logic;
+	signal clock_locked	: std_logic;
+	
+	COMPONENT CLOCK_GEN
+	PORT(
+		CLK_IN1 : IN std_logic;
+		RESET : IN std_logic;          
+		CLK_OUT1 : OUT std_logic;
+		LOCKED : OUT std_logic
+		);
+	END COMPONENT;
 	
 	COMPONENT UA880D
 	PORT(
@@ -105,7 +116,14 @@ begin
 		end if;
 	end process;
 	
-	reset_n <= RESET;
+	Inst_CLOCK_GEN: CLOCK_GEN PORT MAP(
+		CLK_IN1 => CLK,
+		CLK_OUT1 => clock_n,
+		RESET => RESET,
+		LOCKED => clock_locked
+	);
+	
+	reset_n <= not ((not RESET) and clock_locked);
 	
 	CPU_16: UA880D PORT MAP(
 		D => data_bus,
