@@ -95,10 +95,17 @@ architecture Behave of Main is
 	END COMPONENT;
 	
 begin
-	LED(6 downto 0) <= SW(6 downto 0);
-	LED(7) <= not aus_n;
+	process (SW, aus_n, reset_n)
+	begin
+		if (reset_n = '0') then
+			LED <= (others => '1');
+		else
+			LED(6 downto 0) <= SW(6 downto 0);
+			LED(7) <= not aus_n;
+		end if;
+	end process;
 	
-	reset_n <= not RESET;
+	reset_n <= RESET;
 	
 	CPU_16: UA880D PORT MAP(
 		D => data_bus,
