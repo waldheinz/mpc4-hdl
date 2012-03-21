@@ -53,6 +53,7 @@ Inst_T80a: T80a PORT MAP(
 		INT_n => INT_n,
 		NMI_n => NMI_n,
 		BUSRQ_n => BUSRQ_n,
+		D => D,
 		M1_n => M1_n,
 		MREQ_n => MREQ_n,
 		IORQ_n => IORQ_n,
@@ -61,8 +62,7 @@ Inst_T80a: T80a PORT MAP(
 		RFSH_n => RFSH_n,
 		HALT_n => HALT_n,
 		BUSAK_n => BUSAK_n,
-		A => A,
-		D => D
+		A => A
 	);
 
 end Behave;

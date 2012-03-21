@@ -26,6 +26,8 @@ architecture Behave of Main is
 	signal data_bus		: std_logic_vector(8 downto 1);
 	signal chip_select	: std_logic_vector(8 downto 1);
 	signal dc_8_1_out		: std_logic_vector(7 downto 0);
+	signal dc_8_4_out		: std_logic_vector(7 downto 0);
+	signal nand_1_2		: std_logic;
 	signal dack_n			: std_logic;
 	signal reset_n			: std_logic;
 	signal clock_n			: std_logic;
@@ -41,7 +43,7 @@ architecture Behave of Main is
 	signal wr				: std_logic;
 	signal cup16_m1_out 	: std_logic;
 	signal aus_n			: std_logic;
-	signal clock_locked	: std_logic;
+	signal clock_locked	: std_logic; -- locked output of the 4MHz DCG
 	
 	COMPONENT CLOCK_GEN
 	PORT(
@@ -145,6 +147,10 @@ begin
 --		BUSAK_n => 
 	);
 	
+	int_n <= '1';
+	nmi_n <= '1';
+	busrq_n <= '1';
+	
 	Inst_RESET_LOGIC: RESET_LOGIC PORT MAP(
 		a => addr_bus,
 		reset_n => reset_n,
@@ -180,4 +186,16 @@ begin
 	dack_n <= dc_8_1_out(5);
 	addr_bus(17) <= dc_8_1_out(6);
 	
+	nand_1_2 <= '0' when (addr_bus(8 downto 6) = "111") else '1';
+	
+	DC_8_4: DS8205D PORT MAP(
+		A => addr_bus(5 downto 3),
+		E1_n => nand_1_2,
+		E2_n => iorq_n,
+		E3 => m1,
+		O => dc_8_4_out
+	);
+	
+	chip_select(4 downto 1) <= dc_8_4_out(3 downto 0);
+	chip_select(8 downto 6) <= dc_8_4_out(7 downto 5);
 end Behave;
