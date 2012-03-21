@@ -78,6 +78,7 @@ architecture Behave of Main is
 		a : IN std_logic_vector(17 downto 1);
 		reset_n : IN std_logic;
 		clock_n : IN std_logic;
+		mreq_n : IN std_logic;
 		iorq_n : IN std_logic;
 		wr_n : IN std_logic;
 		m1_n : IN std_logic;          
@@ -111,7 +112,7 @@ begin
 		if (reset_n = '0') then
 			LED <= (others => '1');
 		else
-			LED(6 downto 0) <= SW(6 downto 0);
+			LED(6 downto 0) <= (others => '0');
 			LED(7) <= not aus_n;
 		end if;
 	end process;
@@ -148,6 +149,7 @@ begin
 		a => addr_bus,
 		reset_n => reset_n,
 		clock_n => clock_n,
+		mreq_n => mreq_n,
 		iorq_n => iorq_n,
 		wr_n => wr,
 		m1_n => m1,

@@ -7,7 +7,8 @@ entity RESET_LOGIC is
 		a			: in  STD_LOGIC_VECTOR(17 downto 1);
 		reset_n 	: in  STD_LOGIC;
 		clock_n	: in  STD_LOGIC;
-		iorq_n	: in  STD_LOGIC;
+		mreq_n	: in  STD_LOGIC;
+		iorq_n	: in 	STD_LOGIC;
 		wr_n		: in  STD_LOGIC;
 		m1_n		: in  STD_LOGIC;
 		aus_n 	: out STD_LOGIC;
@@ -38,7 +39,7 @@ begin
 	
 	DC_8_2: DS8205D PORT MAP(
 		A => a(15 downto 13),
-		E1_n => iorq_n,
+		E1_n => mreq_n,
 		E2_n => '0',
 		E3 => a(16),
 		O => dc_8_2_d
@@ -53,7 +54,7 @@ begin
 		end if;
 	end process;
 	
-	t_9_1_2 : process(reset_n)
+	t_9_1_2 : process(reset_n, a)
 	begin
 		if (reset_n = '0') then
 			t_9_1_2_qn <= '1';
