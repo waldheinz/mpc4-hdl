@@ -36,6 +36,7 @@ architecture Behave of RESET_LOGIC is
 begin
 	aus_n <= not (nand_4_1_1_out and t_9_1_2_qn);
 	nand_4_1_1_out <= not (dc_8_2_d(3) and t_9_1_1_qn);
+	wait_n <= '1';
 	
 	DC_8_2: DS8205D PORT MAP(
 		A => a(15 downto 13),

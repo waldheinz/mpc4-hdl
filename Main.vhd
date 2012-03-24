@@ -122,11 +122,11 @@ begin
 	Inst_CLOCK_GEN: CLOCK_GEN PORT MAP(
 		CLK_IN1 => CLK,
 		CLK_OUT1 => clock_n,
-		RESET => RESET,
+		RESET => '0',
 		LOCKED => clock_locked
 	);
 	
-	reset_n <= not ((not RESET) and clock_locked);
+	reset_n <= (RESET and clock_locked);
 	
 	CPU_16: UA880D PORT MAP(
 		D => data_bus,
