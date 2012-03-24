@@ -18,11 +18,14 @@ ARCHITECTURE behavior OF tb_U82720_UC IS
          DB : INOUT  std_logic_vector(7 downto 0);
          A0 : IN  std_logic;
          RD_n : IN  std_logic;
-         WR_n : IN  std_logic
-        );
+         WR_n : IN  std_logic;
+			LPD	: in		STD_LOGIC;  -- light pen detect
+			HSYNC	: in		STD_LOGIC;
+			VSYNC	: in 		STD_LOGIC;
+			DMA_A	: in 		STD_LOGIC;  -- DMA active
+			PAINT	: in 		STD_LOGIC); -- paint in progress
     END COMPONENT;
-    
-
+	
    --Inputs
    signal A0 : std_logic := '0';
    signal RD_n : std_logic := '1';
@@ -38,7 +41,8 @@ BEGIN
           DB => DB,
           A0 => A0,
           RD_n => RD_n,
-          WR_n => WR_n
+          WR_n => WR_n,
+			 LPD => '0', HSYNC => '0', VSYNC => '0', DMA_A => '0', PAINT => '0'
         );
 
    -- Stimulus process

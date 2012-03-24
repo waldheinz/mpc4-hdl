@@ -15,7 +15,12 @@ entity U82720_UC is
 		-- write: 0 -> FIFO parameter,  1 -> FIFO command
 		A0 	: in  	STD_LOGIC;
       RD_n 	: in  	STD_LOGIC;
-      WR_n	: in  	STD_LOGIC);
+      WR_n	: in  	STD_LOGIC;
+		LPD	: in		STD_LOGIC;  -- light pen detect
+		HSYNC	: in		STD_LOGIC;
+		VSYNC	: in 		STD_LOGIC;
+		DMA_A	: in 		STD_LOGIC;  -- DMA active
+		PAINT	: in 		STD_LOGIC); -- paint in progress
 end U82720_UC;
 
 architecture RTL of U82720_UC is
@@ -34,6 +39,14 @@ architecture RTL of U82720_UC is
 	
 begin
 	DB <= data_out when (RD_n = '0') else (others => 'Z');
+	
+	status_reg(7) <= LPD;
+	status_reg(6) <= HSYNC;
+	status_reg(5) <= VSYNC;
+	status_reg(4) <= DMA_A;
+	status_reg(3) <= PAINT;
+	status_reg(2) <= '1' when (fifo_rd = fifo_wr) else '0'; -- FIFO empty
+	status_reg(1) <= '1' when (fifo_rd = (fifo_wr + 1)) else '0'; -- FIFO full (keep one slot empty)
 	
 	proc_reset: process (A0, WR_n, DB)
 	begin
