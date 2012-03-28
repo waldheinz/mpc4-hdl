@@ -22,7 +22,6 @@ ARCHITECTURE behavior OF tb_U82720_CTRL IS
         );
     END COMPONENT;
     
-
    --Inputs
    signal CLK : std_logic := '0';
    signal RESET : std_logic := '1';
@@ -71,13 +70,23 @@ BEGIN
 		wait for 10 ns;
 		reset <= '1';
 		
-		wait for 10 ns;
-		-- DB <= 
+		fifo_e <= '0';
 		
-      wait for CLK_period*10;
-
-      -- insert stimulus here 
-
+		wait until rd_req = '1';
+		
+		DB <= "00011011";
+		wait for 3 ns;
+		d_ready <= '1';
+		
+      wait until rd_req = '0';
+		wait for 3 ns;
+		d_ready <= '0';
+		wait until rd_req = '1';
+		
+		DB <= "10101010";
+		wait for 3 ns;
+		d_ready <= '1';
+		
       wait;
    end process;
 
