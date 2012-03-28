@@ -22,9 +22,12 @@ entity U82720_GMI is
       MASK_MSB    : out    STD_LOGIC;
       MASK_LSB    : out    STD_LOGIC;
       
-      -- external settign of pattern register
+      -- external setting of pattern register
       PTRN_LOADL  : in     STD_LOGIC;
       PTRN_LOADH  : in     STD_LOGIC;
+      
+      -- logical RMW operation select
+      RMW_OP      : in     STD_LOGIC_VECTOR(1 downto 0);
       
       --
       -- Memory Interface
@@ -47,6 +50,9 @@ architecture RTL of U82720_GMI is
    signal rmw_cycle_cnt : unsigned(3 downto 0);
    signal rmw_ptrn : std_logic_vector(15 downto 0); -- currently effective pattern for RMW logic
    signal rmw_graphics : std_logic;
+   
+   signal rd_data : std_logic_vector(15 downto 0); -- input buffer from RAM
+   signal wr_data : std_logic_vector(15 downto 0); -- output of RMW logic for writing to RAM
    
 begin
    DB <= (others => 'Z');
@@ -84,7 +90,7 @@ begin
       if (rising_edge(CLK)) then
          if (PTRN_LOADL = '1') then
             ptrn(7 downto 0) <= DB;
-         elsif (PRTN_LOADH = '1') then
+         elsif (PTRN_LOADH = '1') then
             ptrn(15 downto 8) <= DB;
          end if;
       end if;
@@ -94,10 +100,33 @@ begin
    proc_rmw_ptrn : process(ptrn, rmw_cycle_cnt, rmw_graphics)
    begin
       if (rmw_graphics = '1') then
-         rmw_ptrn <= (others => ptrn(15 - rmw_cycle_count));
+         rmw_ptrn <= (others => ptrn(to_integer(rmw_cycle_cnt)));
       else
          rmw_ptrn <= ptrn;
       end if;
+   end process;
+   
+   -- RMW logic block
+   proc_rmw_logic : process(rmw_ptrn, RMW_OP, mask, rd_data)
+      variable replace_op, do_replace : std_logic;
+   begin
+      replace_op := '1' when RMW_OP = "00" else '0';
+      
+      for n in 0 to 15 loop
+         do_replace := mask(n) when replace_op = '1' else mask(n) and rmw_ptrn(n);
+         
+         if (do_replace = '1') then
+            case RMW_OP is
+               when "00" => wr_data(n) <= rmw_ptrn(n); -- replace
+               when "01" => wr_data(n) <= not rd_data(n); -- complement
+               when "10" => wr_data(n) <= '0'; -- reset
+               when "11" => wr_data(n) <= '1'; -- set
+            end case;
+         else
+            wr_data(n) <= rd_data(n);
+         end if;
+         
+      end loop;
    end process;
    
 end RTL;
