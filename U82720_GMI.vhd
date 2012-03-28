@@ -1,6 +1,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.all;
 
 --
 -- Video RAM Controller
@@ -21,6 +22,10 @@ entity U82720_GMI is
       MASK_MSB    : out    STD_LOGIC;
       MASK_LSB    : out    STD_LOGIC;
       
+      -- external settign of pattern register
+      PTRN_LOADL  : in     STD_LOGIC;
+      PTRN_LOADH  : in     STD_LOGIC;
+      
       --
       -- Memory Interface
       --
@@ -36,10 +41,17 @@ end U82720_GMI;
 
 architecture RTL of U82720_GMI is
    
-   signal mask : std_logic_vector (15 downto 0);
+   signal mask : std_logic_vector (15 downto 0); -- mask register
+   signal ptrn : std_logic_vector (15 downto 0); -- pattern register
+   
+   signal rmw_cycle_cnt : unsigned(3 downto 0);
+   signal rmw_ptrn : std_logic_vector(15 downto 0); -- currently effective pattern for RMW logic
+   signal rmw_graphics : std_logic;
    
 begin
    DB <= (others => 'Z');
+   
+   rmw_graphics <= '1';
    
    -- concurrent output of mask LSB and MSB
    MASK_MSB <= mask(15);
@@ -63,6 +75,28 @@ begin
             mask(14 downto 0) <= mask(15 downto 1);
             mask(15) <= tmp;
          end if;
+      end if;
+   end process;
+   
+   -- pattern loading
+   proc_ptrn : process(CLK, DB, PTRN_LOADL, PTRN_LOADH)
+   begin
+      if (rising_edge(CLK)) then
+         if (PTRN_LOADL = '1') then
+            ptrn(7 downto 0) <= DB;
+         elsif (PRTN_LOADH = '1') then
+            ptrn(15 downto 8) <= DB;
+         end if;
+      end if;
+   end process;
+   
+   -- deternmine effective pattern for RMW logic
+   proc_rmw_ptrn : process(ptrn, rmw_cycle_cnt, rmw_graphics)
+   begin
+      if (rmw_graphics = '1') then
+         rmw_ptrn <= (others => ptrn(15 - rmw_cycle_count));
+      else
+         rmw_ptrn <= ptrn;
       end if;
    end process;
    
