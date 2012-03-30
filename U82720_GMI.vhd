@@ -27,6 +27,7 @@ entity U82720_GMI is
       PTRN_LOADH  : in     STD_LOGIC;
       
       -- logical RMW operation select
+      RMW_CYCLE   : in     STD_LOGIC; -- if a RMW (instead of display) cycle should be performed
       RMW_OP      : in     STD_LOGIC_VECTOR(1 downto 0);
       
       --
