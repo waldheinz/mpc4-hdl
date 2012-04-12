@@ -42,9 +42,15 @@ architecture Behave of Main is
 	signal rd				: std_logic;
 	signal wr				: std_logic;
 	signal cup16_m1_out 	: std_logic;
+   signal cpu16_bus_ack : std_logic;
 	signal aus_n			: std_logic;
 	signal clock_locked	: std_logic; -- locked output of the 4MHz DCG
-	
+   
+	signal dma16_int_n   : std_logic;
+   signal dma16_ieo     : std_logic;
+   signal bus_ack       : std_logic;
+   signal drq_n         : std_logic;
+   
 	COMPONENT CLOCK_GEN
 	PORT(
 		CLK_IN1 : IN std_logic;
@@ -75,6 +81,27 @@ architecture Behave of Main is
 		);
 	END COMPONENT;
 	
+   COMPONENT UA858D
+	PORT(
+		WR_n : IN std_logic;
+		RD_n : IN std_logic;
+		IORQ_n : IN std_logic;
+		MREQ_n : IN std_logic;
+		BUSRQ_n : IN std_logic;
+		C : IN std_logic;
+		M1_n : IN std_logic;
+		CS_WAIT_n : IN std_logic;
+		IEI : IN std_logic;
+		BAI_n : IN std_logic;
+		RDY : IN std_logic;    
+		D : INOUT std_logic_vector(7 downto 0);      
+		A : OUT std_logic_vector(15 downto 0);
+		IEO : OUT std_logic;
+		BAO_n : OUT std_logic;
+		INT_n : OUT std_logic
+		);
+	END COMPONENT;
+   
 	COMPONENT RESET_LOGIC
 	PORT(
 		a : IN std_logic_vector(17 downto 1);
@@ -119,7 +146,7 @@ begin
 		end if;
 	end process;
 	
-	Inst_CLOCK_GEN: CLOCK_GEN PORT MAP(
+	CLK_GEN: CLOCK_GEN PORT MAP(
 		CLK_IN1 => CLK,
 		CLK_OUT1 => clock_n,
 		RESET => '0',
@@ -142,16 +169,35 @@ begin
 		IORQ_n => iorq_n,
 		RD_n => rd,
 		WR_n => wr,
-		RFSH_n => rfsh_n
+		RFSH_n => rfsh_n,
 --		HALT_n => ,
---		BUSAK_n => 
+		BUSAK_n => cpu16_bus_ack
 	);
 	
-	int_n <= '1';
+   DMA_17 : UA858D PORT MAP(
+		D => data_bus,
+      WR_n => wr,
+		RD_n => rd,
+		IORQ_n => iorq_n,
+		MREQ_n => mreq_n,
+		BUSRQ_n => busrq_n,
+		C => clock_n,
+		M1_n => m1,
+		CS_WAIT_n => dc_8_1_out(7),
+		IEI => '1',
+		BAI_n => cpu16_bus_ack,
+		RDY => drq_n,
+		A => addr_bus(16 downto 1),
+		IEO => dma16_ieo,
+		BAO_n => bus_ack,
+		INT_n => dma16_int_n
+	);
+   
+	int_n <= dma16_int_n;
 	nmi_n <= '1';
 	busrq_n <= '1';
 	
-	Inst_RESET_LOGIC: RESET_LOGIC PORT MAP(
+	RST_LOGIC: RESET_LOGIC PORT MAP(
 		a => addr_bus,
 		reset_n => reset_n,
 		clock_n => clock_n,
