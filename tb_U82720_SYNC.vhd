@@ -67,7 +67,7 @@ BEGIN
       SET <= std_logic_vector(to_unsigned(2, 4));
       wait for CLK_period;
       
-      DB <= "10101000";
+      DB <= "10100101";
       SET <= std_logic_vector(to_unsigned(3, 4));
       wait for CLK_period;
       
@@ -90,6 +90,8 @@ BEGIN
       DB <= "00010000";
       SET <= std_logic_vector(to_unsigned(8, 4));
       wait for CLK_period;
+      
+      SET <= (others => '0');
       
       wait;
    end process;
