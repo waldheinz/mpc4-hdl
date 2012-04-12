@@ -46,10 +46,16 @@ architecture Behave of Main is
 	signal aus_n			: std_logic;
 	signal clock_locked	: std_logic; -- locked output of the 4MHz DCG
    
-	signal dma16_int_n   : std_logic;
-   signal dma16_ieo     : std_logic;
+   -- DMA signals
+	signal dma17_int_n   : std_logic;
+   signal dma17_ieo     : std_logic;
    signal bus_ack       : std_logic;
    signal drq_n         : std_logic;
+   
+   -- CTC 1 signals
+   signal ctc_21_1_ieo  : std_logic;
+   signal ctc_zcto      : std_logic_vector(2 downto 0);
+   signal ctc_21_1_int_n: std_logic;
    
 	COMPONENT CLOCK_GEN
 	PORT(
@@ -98,6 +104,24 @@ architecture Behave of Main is
 		A : OUT std_logic_vector(15 downto 0);
 		IEO : OUT std_logic;
 		BAO_n : OUT std_logic;
+		INT_n : OUT std_logic
+		);
+	END COMPONENT;
+   
+   COMPONENT UA857D
+	PORT(
+		CS_n : IN std_logic;
+		KS : IN std_logic_vector(1 downto 0);
+		M1_n : IN std_logic;
+		IORQ_n : IN std_logic;
+		RD_n : IN std_logic;
+		IEI : IN std_logic;
+		C_TRG : IN std_logic_vector(3 downto 0);
+		RESET_n : IN std_logic;
+		C : IN std_logic;    
+		D : INOUT std_logic_vector(7 downto 0);      
+		IEO : OUT std_logic;
+		ZC_TO : OUT std_logic_vector(2 downto 0);
 		INT_n : OUT std_logic
 		);
 	END COMPONENT;
@@ -188,15 +212,31 @@ begin
 		BAI_n => cpu16_bus_ack,
 		RDY => drq_n,
 		A => addr_bus(16 downto 1),
-		IEO => dma16_ieo,
+		IEO => dma17_ieo,
 		BAO_n => bus_ack,
-		INT_n => dma16_int_n
+		INT_n => dma17_int_n
 	);
    
-	int_n <= dma16_int_n;
+	int_n <= dma17_int_n and ctc_21_1_int_n;
 	nmi_n <= '1';
 	busrq_n <= '1';
 	
+   CTC_21_1: UA857D PORT MAP(
+		D => data_bus,
+		CS_n => chip_select(6),
+		KS => "11", -- connected to SIO 18.2
+		M1_n => m1,
+		IORQ_n => iorq_n,
+		RD_n => rd,
+		IEI => dma17_ieo,
+		C_TRG(3 downto 2) => ctc_zcto(2 downto 1),
+		RESET_n => reset_n,
+		C => clock_n,
+		IEO => ctc_21_1_ieo,
+		ZC_TO => ctc_zcto,
+		INT_n => ctc_21_1_int_n
+	);
+   
 	RST_LOGIC: RESET_LOGIC PORT MAP(
 		a => addr_bus,
 		reset_n => reset_n,
