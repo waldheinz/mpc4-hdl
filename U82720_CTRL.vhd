@@ -5,14 +5,16 @@ use IEEE.NUMERIC_STD.all;
 
 entity U82720_CTRL is
 	Port (
-		CLK		: in 		STD_LOGIC;								-- clock
-		RESET		: in 		STD_LOGIC; 								-- async reset
-		DB			: in  	STD_LOGIC_VECTOR (7 downto 0);	-- GDC internal data bus
-		D_CMD		: in 		STD_LOGIC;								-- command bit (is the byte on DB a command or data?)
-		D_READY	: in 		STD_LOGIC;								-- ready from FIFO
-		FIFO_E	: in  	STD_LOGIC;								-- FIFO empty
-		RD_REQ	: out		STD_LOGIC;								-- read request to FIFO
-		DB_DIR	: out		STD_LOGIC);								-- direction of data transfer (0 -> to GDC, 1 -> to host)
+		CLK		   : in  STD_LOGIC;								-- clock
+		RESET		   : in  STD_LOGIC; 								-- async reset
+		DB			   : in  STD_LOGIC_VECTOR (7 downto 0);	-- GDC internal data bus
+		D_CMD		   : in  STD_LOGIC;								-- command bit (is the byte on DB a command or data?)
+		D_READY	   : in  STD_LOGIC;								-- ready from FIFO
+		FIFO_E	   : in  STD_LOGIC;								-- FIFO empty
+		RD_REQ	   : out STD_LOGIC;								-- read request to FIFO
+		DB_DIR	   : out STD_LOGIC;								-- direction of data transfer (0 -> to GDC, 1 -> to host)
+      SYNC_CTRL   : out STD_LOGIC_VECTOR(3 downto 0);    -- controls the video sync unit
+      V_ENABLED   : out STD_LOGIC);                      -- video gen. enabled
 end U82720_CTRL;
 
 architecture RTL of U82720_CTRL is

@@ -39,8 +39,8 @@ entity U82720_GMI is
       -- in character mode: A_16 is MSB of line counter, A_17 outputs cursor signal
       -- in mixed mode: A_16 is external line counter clear pulse, A_17 signals whether next raster line is bitmap or characters
       -- values may change during first clock cycle of memory cycle or fourth clock cycle of RMW cycle
-      A_16  : out    STD_LOGIC;
-      A_17  : out    STD_LOGIC);
+      A_16        : out    STD_LOGIC;
+      A_17        : out    STD_LOGIC);
 end U82720_GMI;
 
 architecture RTL of U82720_GMI is
@@ -118,10 +118,10 @@ begin
          
          if (do_replace = '1') then
             case RMW_OP is
-               when "00" => wr_data(n) <= rmw_ptrn(n); -- replace
-               when "01" => wr_data(n) <= not rd_data(n); -- complement
-               when "10" => wr_data(n) <= '0'; -- reset
-               when "11" => wr_data(n) <= '1'; -- set
+               when "00"   => wr_data(n) <= rmw_ptrn(n); -- replace
+               when "01"   => wr_data(n) <= not rd_data(n); -- complement
+               when "10"   => wr_data(n) <= '0'; -- reset
+               when others => wr_data(n) <= '1'; -- set
             end case;
          else
             wr_data(n) <= rd_data(n);

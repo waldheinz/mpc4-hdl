@@ -91,7 +91,7 @@ BEGIN
       SET <= std_logic_vector(to_unsigned(8, 4));
       wait for CLK_period;
       
-      SET <= (others => '0');
+      ENABLE <= '1';
       
       wait;
    end process;

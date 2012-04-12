@@ -42,7 +42,6 @@ architecture RTL of U82720_SYNC is
    signal field_cnt : unsigned(9 downto 0); -- counts the lines in a display field
    signal vstate_end : unsigned(7 downto 0); -- line number when vstate should advance
    signal hstate_end : unsigned(9 downto 0); -- row number when hstate should advance
-   signal reset : std_logic;
    signal v_blank : std_logic;
    signal h_blank : std_logic;
    
@@ -64,23 +63,12 @@ begin
       "00"  & vbp when (vstate = S_VBP) else
       aw;
    
-   reset <= '0' when SET = "0000" else '1';
-   
- --  proc_pixels : process(CLK, line_cnt, reset)
- --  begin
- --     if (reset = '1') then
- --        line_cnt <= (others => '0');
- --     elsif (rising_edge(CLK)) then
- --        line_cnt <= line_cnt + 1;
- --     end if;
- --  end process;
-   
    HSYNC <= '1' when hstate = S_HSYNC else '0';
    h_blank <= '0' when hstate = S_HACTIVE else '1';
    
-   proc_hsync : process(CLK, hstate, line_cnt, field_cnt, hstate_end, vstate_end, reset)
+   proc_hsync : process(CLK, hstate, line_cnt, field_cnt, hstate_end, vstate_end, ENABLE)
    begin
-      if (reset = '1') then
+      if (ENABLE = '0') then
          hstate <= s_HFP;
          field_cnt <= (others => '0');
          line_cnt <= (others => '0');
@@ -94,6 +82,7 @@ begin
                when S_HBP => hstate <= S_HACTIVE;
                when others =>
                   hstate <= S_HFP;
+                  
                   if (field_cnt = vstate_end) then
                      field_cnt <= (others => '0');
                   else
