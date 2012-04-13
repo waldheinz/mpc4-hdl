@@ -20,7 +20,7 @@ entity Main is
 	);
 end Main;
 
-architecture Behave of Main is
+architecture RTL of Main is
 
 	signal addr_bus 		: std_logic_vector(17 downto 1);
 	signal data_bus		: std_logic_vector(8 downto 1);
@@ -38,6 +38,8 @@ architecture Behave of Main is
 	signal mreq_n			: std_logic;
 	signal iorq_n			: std_logic;
 	signal rfsh_n			: std_logic;
+   signal com_n         : std_logic;
+   signal db_10         : std_logic; -- this is just (not com_n)
 	signal m1				: std_logic;
 	signal rd				: std_logic;
 	signal wr				: std_logic;
@@ -87,6 +89,20 @@ architecture Behave of Main is
 		);
 	END COMPONENT;
 	
+   COMPONENT RAM_256
+	PORT(
+		RD_n : IN std_logic;
+		BANK_n : IN std_logic_vector(7 downto 0);
+		COM_n : IN std_logic;
+		A : IN std_logic_vector(15 downto 0);
+		RFSH_n : IN std_logic;
+		AUS_n : IN std_logic;
+		TAKT : IN std_logic;
+		MREQ_n : IN std_logic;       
+		D : INOUT std_logic_vector(7 downto 0)
+		);
+	END COMPONENT;
+   
    COMPONENT UA858D
 	PORT(
 		WR_n : IN std_logic;
@@ -136,7 +152,9 @@ architecture Behave of Main is
 		wr_n : IN std_logic;
 		m1_n : IN std_logic;          
 		aus_n : OUT std_logic;
-		wait_n : OUT std_logic
+		wait_n : OUT std_logic;
+      com_n : OUT std_logic;
+      db_10 : OUT std_logic
 		);
 	END COMPONENT;
 	
@@ -198,6 +216,18 @@ begin
 		BUSAK_n => cpu16_bus_ack
 	);
 	
+   RAM : RAM_256 PORT MAP(
+		RD_n => rd,
+		BANK_n => (others => '0'),
+		COM_n => com_n,
+		A => addr_bus(16 downto 1),
+		RFSH_n => rfsh_n,
+		AUS_n => aus_n,
+		TAKT => clock_n,
+		MREQ_n => mreq_n,
+		D => data_bus
+	);
+   
    DMA_17 : UA858D PORT MAP(
 		D => data_bus,
       WR_n => wr,
@@ -229,6 +259,7 @@ begin
 		IORQ_n => iorq_n,
 		RD_n => rd,
 		IEI => dma17_ieo,
+      C_TRG(1 downto 0) => "11",
 		C_TRG(3 downto 2) => ctc_zcto(2 downto 1),
 		RESET_n => reset_n,
 		C => clock_n,
@@ -246,7 +277,9 @@ begin
 		wr_n => wr,
 		m1_n => m1,
 		aus_n => aus_n,
-		wait_n => wait_n
+		wait_n => wait_n,
+      com_n => com_n,
+      db_10 => db_10
 	);
 	
 	EPROM_20: U2732 PORT MAP(
@@ -284,4 +317,4 @@ begin
 	
 	chip_select(4 downto 1) <= dc_8_4_out(3 downto 0);
 	chip_select(8 downto 6) <= dc_8_4_out(7 downto 5);
-end Behave;
+end RTL;

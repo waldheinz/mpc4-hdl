@@ -12,7 +12,9 @@ entity RESET_LOGIC is
 		wr_n		: in  STD_LOGIC;
 		m1_n		: in  STD_LOGIC;
 		aus_n 	: out STD_LOGIC;
-		wait_n	: out STD_LOGIC
+		wait_n	: out STD_LOGIC;
+      com_n    : out STD_LOGIC;
+      db_10    : out STD_LOGIC
 	);
 end RESET_LOGIC;
 
@@ -32,10 +34,11 @@ architecture Behave of RESET_LOGIC is
 	signal t_9_1_2_qn			: std_logic;
 	signal nand_4_1_1_out	: std_logic;
 	signal dc_8_2_d			: std_logic_vector(7 downto 0);
-	
+	signal nand_7_2_1       : std_logic;
+   
 begin
 	aus_n <= not (nand_4_1_1_out and t_9_1_2_qn);
-	nand_4_1_1_out <= not (dc_8_2_d(3) and t_9_1_1_qn);
+	nand_4_1_1_out <= not (dc_8_2_d(4) and t_9_1_1_qn);
 	wait_n <= '1';
 	
 	DC_8_2: DS8205D PORT MAP(
@@ -64,4 +67,12 @@ begin
 		end if;
 	end process;
 	
+   -- this is controlled by switch S1.3, possible values are 4..7,
+   -- we're just using 4 for now
+   -- TODO: the correct setting is unknown for now
+   nand_7_2_1 <= dc_8_2_d(4);
+   db_10 <= nand_7_2_1;
+   
+   -- this is the output of NAND 7_2_2
+   com_n <= not nand_7_2_1;
 end Behave;

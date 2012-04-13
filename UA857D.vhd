@@ -29,5 +29,5 @@ end UA857D;
 architecture RTL of UA857D is
    
 begin
-   
+   D <= (others => 'Z');
 end RTL;
