@@ -39,7 +39,9 @@ entity UA855D is
 end UA855D;
 
 architecture RTL of UA855D is
-   
+   signal reset_n : std_logic;
 begin
+   
+   reset_n <= '0' when (M1_n = '0' and RD_n = '1' and IORQ_n = '1') else '1';
    
 end RTL;
