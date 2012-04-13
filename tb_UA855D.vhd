@@ -15,7 +15,7 @@ ARCHITECTURE behavior OF tb_UA855D IS
  
     COMPONENT UA855D
     PORT(
-         C : IN  std_logic;
+         CLK : IN  std_logic;
          D : INOUT  std_logic_vector(7 downto 0);
          B_A_SEL : IN  std_logic;
          C_D_SEL : IN  std_logic;
@@ -65,7 +65,7 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: UA855D PORT MAP (
-          C => C,
+          CLK => C,
           D => D,
           B_A_SEL => B_A_SEL,
           C_D_SEL => C_D_SEL,
@@ -92,24 +92,23 @@ BEGIN
 		C <= '1';
 		wait for C_period/2;
    end process;
- 
-
-   -- Stimulus process
+   
    stim_proc: process
-   begin		
-      -- hold reset state for 100 ns.
-      wait for 100 ns;	
-
-      M1_n <= '0';
+   begin
       RD_n <= '1';
       IORQ_n <= '1';
 
       wait for C_period*10;
 
+      CS_n <= '1';
       M1_n <= '1';
-
-      -- insert stimulus here 
-
+      D <= "11001111";
+      
+      wait for 10 ns;
+      
+      CS_n <= '0';
+      C_D_SEL <= '1';
+      
       wait;
    end process;
 
