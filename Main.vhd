@@ -204,7 +204,23 @@ architecture RTL of Main is
 		);
 	END COMPONENT;
    
+   COMPONENT GDC1
+	PORT(
+		IRD : IN std_logic;
+		IWR : IN std_logic;
+		AB : IN std_logic_vector(7 downto 0);
+		IODI_n : IN std_logic;
+		IORQ_n : IN std_logic;
+		M1_n : IN std_logic;    
+		DB : INOUT std_logic_vector(7 downto 0);      
+		HSYNC : OUT std_logic;
+		VSYNC : OUT std_logic;
+		BA : OUT std_logic
+		);
+	END COMPONENT;
+   
 begin
+   
 	process (SW, aus_n, reset_n)
 	begin
 		if (reset_n = '0') then
@@ -376,6 +392,19 @@ begin
 		E3 => pio_13_port_a(6),
 		O(3 downto 0) => bank_n(7 downto 4),
       O(7 downto 4) => bank_n(3 downto 0)
+	);
+   
+   GDC_1: GDC1 PORT MAP(
+		DB => data_bus,
+		IRD => rd,
+		IWR => wr,
+		AB => addr_bus(8 downto 1),
+		IODI_n => '1',
+		IORQ_n => iorq_n,
+		M1_n => m1
+--		HSYNC => ,
+--		VSYNC => ,
+--		BA => 
 	);
    
 end RTL;
