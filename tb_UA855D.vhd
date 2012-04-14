@@ -95,19 +95,28 @@ BEGIN
    
    stim_proc: process
    begin
+      -- reset
       RD_n <= '1';
       IORQ_n <= '1';
-
       wait for C_period*10;
 
+      -- set port A ctrl mode
       CS_n <= '1';
       M1_n <= '1';
+      C_D_SEL <= '1';
       D <= "11001111";
-      
-      wait for 10 ns;
+      wait for 20 ns;
       
       CS_n <= '0';
-      C_D_SEL <= '1';
+      
+      wait for 20 ns;
+      
+      -- set port A pins i/o mode
+      CS_n <= '1';
+      D <= "10000000";
+      wait for 20 ns;
+      
+      CS_n <= '0';
       
       wait;
    end process;

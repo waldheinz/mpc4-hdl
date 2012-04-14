@@ -37,6 +37,10 @@ end UA855D;
 
 architecture RTL of UA855D is
    
+   -- State Machine for Bus access
+   type BUS_STATE_TYPE is (BS_WAIT, BS_READ, BS_WRITE, BS_WAIT_DONE);
+   signal bus_state : BUS_STATE_TYPE;
+   
    type PORT_REG_TABLE is array(1 downto 0) of std_logic_vector(7 downto 0);
    
    type PORT_CTRL_STATE_TYPE is (CS_WAIT_CMD, CS_WAIT_IOSEL);
@@ -51,6 +55,7 @@ architecture RTL of UA855D is
    -- Port specific Registers
    signal port_out      : PORT_REG_TABLE; -- Port Output Registers
    signal port_io_sel   : PORT_REG_TABLE; -- Port I/O Select
+   signal port_in       : PORT_REG_TABLE; -- Port input Registers (from port to host)
    
    signal reset_n : std_logic; -- internal async reset signal
    signal port_select : integer range 0 to 1; -- 0 is port A, 1 is B
@@ -61,13 +66,49 @@ begin
    reset_n <= '0' when (M1_n = '0' and RD_n = '1' and IORQ_n = '1' and CS_n = '0') else '1';
    port_select <= 0 when B_A_SEL = '0' else 1;
    
+   proc_bus : process (CLK, RD_n, IORQ_n, CS_n)
+   begin
+      if (reset_n = '0') then
+         bus_state <= BS_WAIT;
+      elsif (rising_edge(CLK)) then
+         case bus_state is
+            when BS_WAIT =>
+               if (CS_n = '0') then
+                  if (RD_n = '1') then
+                     bus_state <= BS_WRITE;
+                  else
+                     bus_state <= BS_READ;
+                  end if;
+               end if;
+               
+            when BS_WAIT_DONE =>
+               if (CS_n = '1') then
+                  bus_state <= BS_WAIT;
+               end if;
+               
+            when others =>
+               bus_state <= BS_WAIT_DONE;
+         end case;
+      end if;
+   end process;
+   
+   proc_busd : process (bus_state, CLK, port_in)
+   begin
+      if (rising_edge(CLK)) then
+         case bus_state is
+            when BS_READ => D <= port_in(port_select);
+            when others => D <= (others => 'Z');
+         end case;
+      end if;
+   end process;
+   
    proc_ctrl : process (B_A_SEL, C_D_SEL, CLK, D, RD_n, port_select)
    begin
       if (reset_n = '0') then
          for i in 0 to 1 loop
             port_ctrl_state(i) <= CS_WAIT_CMD;
          end loop;
-      elsif (rising_edge(CLK) and CS_n = '0' and RD_n = '1' and C_D_SEL = '1') then
+      elsif (rising_edge(CLK) and C_D_SEL = '1' and bus_state = BS_WRITE) then
          case port_ctrl_state(port_select) is
             when CS_WAIT_CMD =>
                case D(3 downto 0) is
