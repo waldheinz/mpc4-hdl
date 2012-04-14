@@ -47,6 +47,7 @@ architecture RTL of Main is
    signal cpu16_bus_ack : std_logic;
 	signal aus_n			: std_logic;
 	signal clock_locked	: std_logic; -- locked output of the 4MHz DCG
+   signal bank_n        : std_logic_vector(7 downto 0); -- RAM bank select
    
    -- DMA signals
 	signal dma17_int_n   : std_logic;
@@ -58,6 +59,10 @@ architecture RTL of Main is
    signal ctc_21_1_ieo  : std_logic;
    signal ctc_zcto      : std_logic_vector(2 downto 0);
    signal ctc_21_1_int_n: std_logic;
+   
+   -- PIO 13 signals
+   signal pio_13_int_n  : std_logic;
+   signal pio_13_port_a : std_logic_vector(7 downto 0);
    
 	COMPONENT CLOCK_GEN
 	PORT(
@@ -177,6 +182,28 @@ architecture RTL of Main is
 		);
 	END COMPONENT;
 	
+   COMPONENT UA855D
+	PORT(
+		CLK : IN std_logic;
+		B_A_SEL : IN std_logic;
+		C_D_SEL : IN std_logic;
+		CS_n : IN std_logic;
+		M1_n : IN std_logic;
+		IORQ_n : IN std_logic;
+		RD_n : IN std_logic;
+		IEI : IN std_logic;
+		ASTB_n : IN std_logic;
+		BSTB_n : IN std_logic;    
+		D : INOUT std_logic_vector(7 downto 0);
+		A : INOUT std_logic_vector(7 downto 0);
+		B : INOUT std_logic_vector(7 downto 0);      
+		IEO : OUT std_logic;
+		INT_n : OUT std_logic;
+		ARDY : OUT std_logic;
+		BRDY : OUT std_logic
+		);
+	END COMPONENT;
+   
 begin
 	process (SW, aus_n, reset_n)
 	begin
@@ -218,7 +245,7 @@ begin
 	
    RAM : RAM_256 PORT MAP(
 		RD_n => rd,
-		BANK_n => (others => '0'),
+		BANK_n => bank_n,
 		COM_n => com_n,
 		A => addr_bus(16 downto 1),
 		RFSH_n => rfsh_n,
@@ -247,7 +274,9 @@ begin
 		INT_n => dma17_int_n
 	);
    
-	int_n <= dma17_int_n and ctc_21_1_int_n;
+   -- determine value of wired-or interrupt signal
+	int_n <= dma17_int_n and ctc_21_1_int_n and pio_13_int_n;
+   
 	nmi_n <= '1';
 	busrq_n <= '1';
 	
@@ -317,4 +346,36 @@ begin
 	
 	chip_select(4 downto 1) <= dc_8_4_out(3 downto 0);
 	chip_select(8 downto 6) <= dc_8_4_out(7 downto 5);
+   
+   PIO_13 : UA855D PORT MAP(
+		CLK => clock_n,
+		D => data_bus,
+		B_A_SEL => addr_bus(1),
+		C_D_SEL => addr_bus(2),
+		CS_n => chip_select(4),
+		M1_n => m1,
+		IORQ_n => iorq_n,
+		RD_n => rd,
+		IEI => '1', -- really SIO 18.2 IEO
+--		IEO => ,
+		INT_n => pio_13_int_n,
+		A => pio_13_port_a,
+	--	ARDY => ,
+		ASTB_n => '1', -- really unconnected
+	--	B => ,            )
+	--	BRDY => ,         ) to connector 5.2
+		BSTB_n => '1' --  )
+	);
+   
+   DC_8_3: DS8205D PORT MAP(
+		A(0) => pio_13_port_a(4),
+      A(1) => pio_13_port_a(5),
+      A(2) => pio_13_port_a(3),
+		E1_n => db_10,
+		E2_n => db_10,
+		E3 => pio_13_port_a(6),
+		O(3 downto 0) => bank_n(7 downto 4),
+      O(7 downto 4) => bank_n(3 downto 0)
+	);
+   
 end RTL;
