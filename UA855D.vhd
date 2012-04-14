@@ -102,7 +102,48 @@ begin
       end if;
    end process;
    
-   proc_ctrl : process (B_A_SEL, C_D_SEL, CLK, D, RD_n, port_select)
+   proc_port_drv : process (port_out, port_io_sel, port_mode)
+   begin
+      for p in 0 to 1 loop
+         case port_mode(p) is
+            when M_CTRL =>
+               for i in 0 to 7 loop
+                  if (p = 0) then
+                     if port_io_sel(0)(i) = '1' then
+                        A(i) <= 'Z';
+                     else
+                        A(i) <= port_out(0)(i);
+                     end if;
+                  else
+                     if port_io_sel(1)(i) = '1' then
+                        B(i) <= 'Z';
+                     else
+                        B(i) <= port_out(1)(i);
+                     end if;
+                  end if;
+               end loop;
+               
+            when others => null;
+               --A <= (others => 'Z');
+               --B <= (others => 'Z');
+         end case;
+      end loop;
+   end process;
+   
+   -- host writing data to the ports
+   proc_data : process (C_D_SEL, CLK, D, port_select)
+   begin
+      if (reset_n = '0') then
+         for i in 0 to 1 loop
+            port_out(i) <= (others => '0');
+         end loop;
+      elsif (rising_edge(CLK) and C_D_SEL = '0' and bus_state = BS_WRITE) then
+         port_out(port_select) <= D;
+      end if;
+   end process;
+   
+   -- host writing control bytes to the ports
+   proc_ctrl : process (C_D_SEL, CLK, D, port_select)
    begin
       if (reset_n = '0') then
          for i in 0 to 1 loop

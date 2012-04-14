@@ -96,6 +96,8 @@ BEGIN
    stim_proc: process
    begin
       -- reset
+      A <= (others => 'Z');
+      
       RD_n <= '1';
       IORQ_n <= '1';
       wait for C_period*10;
@@ -108,12 +110,19 @@ BEGIN
       wait for 20 ns;
       
       CS_n <= '0';
-      
       wait for 20 ns;
       
       -- set port A pins i/o mode
       CS_n <= '1';
       D <= "10000000";
+      wait for 20 ns;
+      
+      CS_n <= '0';
+      wait for 20 ns;
+      
+      CS_n <= '1';
+      D <= "01010101";
+      C_D_SEL <= '0';
       wait for 20 ns;
       
       CS_n <= '0';
