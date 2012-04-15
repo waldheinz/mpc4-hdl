@@ -34,7 +34,9 @@ architecture RTL of U82720 is
 		RD_REQ : OUT std_logic;
 		DB_DIR : OUT std_logic;
 		SYNC_CTRL : OUT std_logic_vector(3 downto 0);
-		V_ENABLED : OUT std_logic
+		V_ENABLED : OUT std_logic;
+      GMI_MASK_L  : out STD_LOGIC;
+      GMI_MASK_H  : out STD_LOGIC
 		);
 	END COMPONENT;
    
@@ -93,7 +95,8 @@ architecture RTL of U82720 is
 	END COMPONENT;
    
    signal db_int : std_logic_vector(7 downto 0); -- internal data bus
-   
+   signal db_dir : std_logic;
+	
    signal h_blank : std_logic;
    signal h_sync : std_logic;
    signal v_blank : std_logic;
@@ -106,6 +109,9 @@ architecture RTL of U82720 is
    signal fifo_empty : std_logic;
    signal fifo_read : std_logic; -- internal read request to fifo
    
+   -- signals the GMI to read it's mask register from the bus
+   signal gmi_mask_l : std_logic;
+   signal gmi_mask_h : std_logic;
 begin
    
    CTRL : U82720_CTRL PORT MAP(
@@ -113,12 +119,14 @@ begin
 		RESET => reset_n,
 		DB => db_int,
 		D_CMD => d_cmd,
---		D_READY => ,
+		D_READY => '0',
 		FIFO_E => fifo_empty,
 		RD_REQ => fifo_read,
-	--	DB_DIR => ,
+		DB_DIR => db_dir,
 		SYNC_CTRL => sync_ctrl,
-		V_ENABLED => video_enable
+		V_ENABLED => video_enable,
+      GMI_MASK_L => gmi_mask_l,
+      GMI_MASK_H => gmi_mask_h
 	);
    
    UC : U82720_UC PORT MAP(
@@ -129,12 +137,12 @@ begin
 		DB_I => db_int,
 		RDI_n => fifo_read,
 		WRI_n => '1', -- TODO : implement host read
-	--	DB_DIR => ,
+		DB_DIR => db_dir,
 		LPD => '0',
 		HSYNC => h_sync,
 		VSYNC => v_sync,
-	--	DMA_A => ,
-	--	PAINT => ,
+		DMA_A => '0',
+		PAINT => '0',
 		EMPTY => fifo_empty,
 		RESET_n => reset_n
 	);
@@ -142,16 +150,16 @@ begin
    GMI: U82720_GMI PORT MAP(
 		DB => db_int,
 		CLK => TWOxWCLK,
---		MASK_LOADL => ,
---		MASK_LOADH => ,
---		MASK_SHL => ,
---		MASK_SHR => ,
+		MASK_LOADL => gmi_mask_l,
+		MASK_LOADH => gmi_mask_h,
+		MASK_SHL => '0',
+		MASK_SHR => '0',
 --		MASK_MSB => ,
 --		MASK_LSB => ,
---		PTRN_LOADL => ,
---		PTRN_LOADH => ,
---		RMW_CYCLE => ,
---		RMW_OP => ,
+		PTRN_LOADL => '0',
+		PTRN_LOADH => '0',
+		RMW_CYCLE => '0',
+		RMW_OP => "00",
 		AD => AD,
 		A_16 => A16,
 		A_17 => A17

@@ -14,7 +14,9 @@ entity U82720_CTRL is
 		RD_REQ	   : out STD_LOGIC;								-- read request to FIFO
 		DB_DIR	   : out STD_LOGIC;								-- direction of data transfer (0 -> to GDC, 1 -> to host)
       SYNC_CTRL   : out STD_LOGIC_VECTOR(3 downto 0);    -- controls the video sync unit
-      V_ENABLED   : out STD_LOGIC);                      -- video gen. enabled
+      V_ENABLED   : out STD_LOGIC;                       -- video gen. enabled
+      GMI_MASK_L  : out STD_LOGIC;
+      GMI_MASK_H  : out STD_LOGIC);
 end U82720_CTRL;
 
 architecture RTL of U82720_CTRL is

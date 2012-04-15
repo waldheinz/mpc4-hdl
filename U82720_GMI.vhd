@@ -111,10 +111,21 @@ begin
    proc_rmw_logic : process(rmw_ptrn, RMW_OP, mask, rd_data)
       variable replace_op, do_replace : std_logic;
    begin
-      replace_op := '1' when RMW_OP = "00" else '0';
+      if RMW_OP = "00" then
+         replace_op := '1';
+      else
+         replace_op := '0';
+      end if;
+      --replace_op := '1' when RMW_OP = "00" else '0';
       
       for n in 0 to 15 loop
-         do_replace := mask(n) when replace_op = '1' else mask(n) and rmw_ptrn(n);
+         if replace_op = '1' then
+            do_replace := mask(n);
+         else
+            do_replace := mask(n) and rmw_ptrn(n);
+         end if;
+         
+         -- do_replace := mask(n) when replace_op = '1' else mask(n) and rmw_ptrn(n);
          
          if (do_replace = '1') then
             case RMW_OP is
